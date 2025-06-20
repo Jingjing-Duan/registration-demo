@@ -37,5 +37,3 @@ This is a student course registration system built using ASP.NET Core Razor Page
 - No backend database – uses in-memory lists for student/course data.
 - JavaScript enhances UX by making the interface feel more dynamic.
 
-## 📂 Folder Structure
-
