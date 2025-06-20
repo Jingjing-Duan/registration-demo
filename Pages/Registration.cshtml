@@ -1,0 +1,209 @@
+﻿@page
+@model Lab3.Pages.RegistrationModel
+@using AcademicManagement;
+@{
+    ViewData["Title"] = "Registration";
+    SelectList Options = new SelectList(AcademicManagement.DataAccess.GetAllStudents(), "StudentId", "StudentName");
+}
+
+<h1>Registrations</h1>
+<br />
+
+<form method="post">
+    <div class="row g-2">
+        <div class="col-3">
+            <select asp-for="SelectedStudentId" asp-items="Options" class="form-select" id="studentSelect" asp-option-label="Choose a student">
+                <option value="-1">Choose a student</option> 
+            </select>
+            <span class="text-danger">@Model.ErrorMessage</span>
+        </div>
+        <div class="col-auto">
+            <button asp-page-handler="StudentSelected" type="submit" id="submitBtn" class="btn btn-primary" style="display:none;">Get Rigistrations</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById('studentSelect').addEventListener('change', function () {
+            document.getElementById('submitBtn').click(); 
+        });
+    </script>
+}
+
+@* <p>Debug: SelectedStudentId = @Model.SelectedStudentId</p> *@
+
+@if (Model.ShowCourses && Model.AvailableCourses.Any())
+{
+    <div class="alert alert-info mt-3">
+        The student has not registered any course. Select course(s) to register.</div>
+    <form method="post">
+        <input type="hidden" asp-for="SelectedStudentId" />
+
+        <table class="table table-bordered table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>
+                        <a asp-page-handler="StudentSelected"
+                           asp-route-SelectedStudentId="@Model.SelectedStudentId"
+                           asp-route-sortField="CourseCode"
+                           asp-route-sortOrder="@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                            Course Code
+                            @if (Model.SortField == "CourseCode")
+                            {
+                                <span>@(Model.SortOrder == "asc" ? "▲" : "▼")</span>
+                            }
+                        </a>
+                    </th>
+                    <th>
+                        <a asp-page-handler="StudentSelected"
+                           asp-route-SelectedStudentId="@Model.SelectedStudentId"
+                           asp-route-sortField="CourseTitle"
+                           asp-route-sortOrder="@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                            Course Title
+                            @if (Model.SortField == "CourseTitle")
+                            {
+                                <span>@(Model.SortOrder == "asc" ? "▲" : "▼")</span>
+                            }
+                        </a>
+                    </th>
+                    <th>Check to Register</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.CourseSelections.Count; i++)
+                {
+                    // seperate course title and course code
+                    string fullText = Model.CourseSelections[i].Text; // e.g. "C# Programming Language (CST8253)"
+                    string code = Model.CourseSelections[i].Value;
+                    string title = fullText.Replace($"({code})", "").Trim();
+                    <tr>
+                        <td>
+                            @code
+                            <input type="hidden" asp-for="CourseSelections[i].Value" />
+                        </td>
+                        <td>
+                            @title
+                        </td>
+                        <td>
+                            <input asp-for="CourseSelections[i].Selected" type="checkbox" class="form-check-input" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button type="submit" asp-page-handler="Register" class="btn btn-primary">Register</button>
+    </form>
+}
+
+@* @if (Model.RegisteredCourses != null && Model.RegisteredCourses.Any()) *@
+@* { *@
+@*     <div class="alert alert-success">The student has registered for the following courses:</div> *@
+@*     <table class="table table-bordered table-striped mt-3"> *@
+@*         <thead> *@
+@*             <tr> *@
+@*                 <th> *@
+@*                     <label class="control-label">Course Code</label> *@
+@*                 </th> *@
+@*                 <th> *@
+@*                     <label class="control-label">Course Title</label> *@
+@*                 </th> *@
+@*             </tr> *@
+@*         </thead> *@
+@*         <tbody> *@
+@*             @for (int i = 0; i < Model.RegisteredCourses.Count; i++) *@
+@*             { *@
+@*                 <tr> *@
+@*                     <td> *@
+@*                         @Model.RegisteredCourses[i].CourseCode *@
+@*                         <input type="hidden" name="RegisteredCourses[@i].CourseCode" value="@Model.RegisteredCourses[i].CourseCode" /> *@
+@*                     </td> *@
+@*                     <td> *@
+@*                         @Model.RegisteredCourses[i].CourseTitle *@
+@*                         <input type="hidden" name="RegisteredCourses[@i].CourseTitle" value="@Model.RegisteredCourses[i].CourseTitle" /> *@
+@*                     </td> *@
+@*                     <td> *@
+@*                         <input type="text" name="RegisteredCourses[@i].Grade" value="@Model.RegisteredCourses[i].Grade" class="form-control" /> *@
+@*                     </td> *@
+@*                 </tr> *@
+@*             } *@
+@*         </tbody> *@
+@*     </table> *@
+@* } *@
+
+@if (Model.AcademicRecords != null && Model.AcademicRecords.Any())
+{
+    <form method="post">
+        <input type="hidden" asp-for="SelectedStudentId" />
+
+        <div class="alert alert-success">The student has registered for the following courses. You can enter or edit the grades</div>
+        <table class="table table-bordered table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>
+                        <a asp-page-handler="StudentSelected"
+                           asp-route-SelectedStudentId="@Model.SelectedStudentId"
+                           asp-route-sortField="CourseCode"
+                           asp-route-sortOrder="@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                            Course Code
+                            @if (Model.SortField == "CourseCode")
+                            {
+                                <span>@(Model.SortOrder == "asc" ? "▲" : "▼")</span>
+                            }
+                        </a>
+                    </th>
+                    <th>
+                        <a asp-page-handler="StudentSelected"
+                           asp-route-SelectedStudentId="@Model.SelectedStudentId"
+                           asp-route-sortField="CourseTitle"
+                           asp-route-sortOrder="@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                            Course Title
+                            @if (Model.SortField == "CourseTitle")
+                            {
+                                <span>@(Model.SortOrder == "asc" ? "▲" : "▼")</span>
+                            }
+                        </a>
+                    </th>
+                    <th>
+                        <a asp-page-handler="StudentSelected"
+                           asp-route-SelectedStudentId="@Model.SelectedStudentId"
+                           asp-route-sortField="Grade"
+                           asp-route-sortOrder="@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                            Grade
+                            @if (Model.SortField == "Grade")
+                            {
+                                <span>@(Model.SortOrder == "asc" ? "▲" : "▼")</span>
+                            }
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.AcademicRecords.Count; i++)
+                {
+                    var record = Model.AcademicRecords[i];
+                    var course = AcademicManagement.DataAccess.GetAllCourses()
+                    .FirstOrDefault(c => c.CourseCode == record.CourseCode);
+                    string title = course?.CourseTitle ?? "Unknown";
+
+                    <tr>
+                        <td>
+                            @record.CourseCode
+                            <input type="hidden" name="AcademicRecords[@i].CourseCode" value="@record.CourseCode" />
+                        </td>
+                        <td>
+                            @title
+                        </td>
+                        <td>
+                            <input type="number" name="AcademicRecords[@i].Grade"
+                                   value="@((record.Grade == -100.0) ? "" : record.Grade.ToString("F1"))"
+                                   class="form-control  form-control-sm" style="max-width: 100px;" max="100" min="0" required />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="submit" asp-page-handler="SubmitGrades" class="btn btn-success mt-2">Submit Grades</button>
+    </form>
+}
